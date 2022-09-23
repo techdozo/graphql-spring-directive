@@ -1,0 +1,77 @@
+"""Convert price from one currency to other. Default value is $"""
+directive @currency(
+    "target currency" currency: String! = "$"
+) on FIELD
+
+directive @Size(
+    min : Int = 0, max : Int = 2147483647, message : String = "graphql.validation.Size.message"
+)
+on ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION
+
+"""Selective authorization check on query fields"""
+directive @auth(
+    role: String!
+) on FIELD_DEFINITION
+
+
+"""
+Book catalog query. A book catalog can be queried to get all books or
+a book by ID.
+"""
+type Query {
+    books: [Book]
+    bookById(id : ID!) : Book
+}
+
+"""
+Mutation to add Book, update Book, delete Book and add Rating
+"""
+type Mutation {
+    addBook(book: BookInput!): BookInfo!
+    updateBook(id: ID!, book: BookInput!): BookInfo!
+    deleteBook(id: ID!): BookInfo!
+    addRating(bookId: Int!, rating: RatingInput!): Rating
+}
+
+type Book {
+    id : ID
+    name : String
+    author: String
+    publisher: String
+    price: Float
+    revenue: Float @auth(role: "manager")
+    ratings: [Rating]
+}
+
+type Rating {
+    id: ID
+    rating: Int
+    comment: String
+    user: String
+}
+
+input RatingInput {
+    rating: Int
+    comment: String
+    user: String
+}
+
+type BookInfo {
+    id : Int
+    name : String
+    author: String
+    publisher: String
+    price: Float
+}
+
+type Output {
+    name: String
+}
+
+input BookInput {
+    name : String! @Size(min : 10, max : 100)
+    author: String! @Size(min : 10, max : 100)
+    publisher: String! @Size(min : 10, max : 100)
+    price: Float!
+}
+
